@@ -2,11 +2,11 @@
 
 Forecasts of Adélie penguin colony growth rates using space-for-time substitution.
 
-## Scripts
+To replicate the results first run "run_adpe_models.R" then "forecast_growth.R".
 
 **scripts/**
 
-  **run_adpe_models.R**: Fits the relationship between sea ice concentration and average colony growth with quadratic relationship in log scale.
+  &ensp; **run_adpe_models.R**: Fits the relationship between sea ice concentration and average colony growth with quadratic relationship in log scale.
 
   **wrangle_data_forecast_adpe.R**: Shapes the climate projection data into sutaible format for population projections with necessary transformations and bias corrections.
 
