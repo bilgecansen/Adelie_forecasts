@@ -139,20 +139,20 @@ g_quad <- ggplot() +
   geom_line(mapping = aes(x = z2$x,
                           y = z2$value,
                           group = z2$iter), alpha = 0.2) +
-  geom_point(mapping = aes(x = ice$aice_avg[-idx_wpe], 
-                           y = mu_r[-idx_wpe]), size = 4, alpha = 0.9, col = "grey") +
-  geom_point(mapping = aes(x = ice$aice_avg[-idx_wpe], 
-                           y = mu_r[-idx_wpe]), size = 4, shape =  1, col = "black") +
-  geom_point(mapping = aes(x = ice$aice_avg[idx_wpe], 
-                           y = mu_r[idx_wpe], col = wpe_sig), size = 6, alpha = 0.8) +
-  geom_point(mapping = aes(x = ice$aice_avg[idx_wpe], 
-                           y = mu_r[idx_wpe]), size = 6, shape = 1, col = "black") +
+  #geom_point(mapping = aes(x = ice$aice_avg[-idx_wpe], 
+                           #y = mu_r[-idx_wpe]), size = 4, alpha = 0.9, col = "grey") +
+  #geom_point(mapping = aes(x = ice$aice_avg[-idx_wpe], 
+                           #y = mu_r[-idx_wpe]), size = 4, shape =  1, col = "black") +
+  #geom_point(mapping = aes(x = ice$aice_avg[idx_wpe], 
+                           #y = mu_r[idx_wpe], col = wpe_sig), size = 6, alpha = 0.8) +
+  #geom_point(mapping = aes(x = ice$aice_avg[idx_wpe], 
+                          # y = mu_r[idx_wpe]), size = 6, shape = 1, col = "black") +
   #scale_y_continuous(limits = c(-0.07, 0.05)) +
-  scale_color_manual(name = NULL,
-                     labels = c("0" = "p > 0.05",
-                                "1" = "p < 0.05"),
-                     values = c("0" = "darkred", 
-                                "1" = "darkblue")) +
+  #scale_color_manual(name = NULL,
+                     #labels = c("0" = "p > 0.05",
+                                #"1" = "p < 0.05"),
+                     #values = c("0" = "darkred", 
+                      #          "1" = "darkblue")) +
   labs(x = "Ice Concentration", y = "Average Growth") +
   theme(legend.position = "bottom",
         title = element_text(size = 12),
