@@ -13,10 +13,7 @@ data_stan_null <- readRDS("data/data_stan_null_adpe.rds")
 # Observed data
 data_aice <- readRDS("data/data_forced_finn_500km_adpe.rds") %>%
   filter(season > 1978) %>%
-  #filter(site_id %in% sites) %>%
-  select(site_id, season, aice) #%>%
-  #group_by(site_id) %>%
-  #summarise(aice_avg = mean(aice))
+  select(site_id, season, aice)
 
 # Forecast/hindcast data
 data_aice_coupled <- readRDS("data/data_aice_coupled_adpe.rds") %>%
@@ -33,8 +30,6 @@ get_env_mat <- function(data_env, x) {
 
 env_mat <- get_env_mat(data_aice, "aice")
 env_mat_avg <- apply(env_mat, 1, mean)
-x_mean <- mean(env_mat_avg)
-x_sd <- sd(env_mat_avg)
 
 env_mat_fore <- foreach(h = 1:length(data_aice_coupled)) %do% 
   get_env_mat(data_aice_coupled[[h]], "aice")
@@ -68,12 +63,12 @@ env_mat_fore_avg <- foreach (i = 1:50) %:%
   }
 
 # make sure forecasts are within data bounds
-for (i in 1:50) {
-  env_mat_fore_avg[[i]][env_mat_fore_avg[[i]] < min(env_mat_avg)] <- 
-    min(env_mat_avg)
-  env_mat_fore_avg[[i]][env_mat_fore_avg[[i]] > max(env_mat_avg)] <- 
-    max(env_mat_avg)
-} 
+#for (i in 1:50) {
+  #env_mat_fore_avg[[i]][env_mat_fore_avg[[i]] < min(env_mat_avg)] <- 
+    #min(env_mat_avg)
+  #env_mat_fore_avg[[i]][env_mat_fore_avg[[i]] > max(env_mat_avg)] <- 
+    #max(env_mat_avg)
+#} 
 
 for (i in 1:50) {
   colnames(env_mat_fore_avg[[i]]) <- 1939:2100
@@ -83,6 +78,18 @@ for (i in 1:50) {
 saveRDS(env_mat_fore_avg, "data/data_coupled_transformed_adpe.rds")
 
 # standardize the data
+sites <- data_pop$site_list$site_id
+
+data_aice2 <- readRDS("data/data_forced_finn_500km_adpe.rds") %>%
+  filter(season > 1978) %>%
+  filter(site_id %in% sites) %>%
+  select(site_id, season, aice) %>%
+  group_by(site_id) %>%
+  summarise(aice_avg = mean(aice))
+
+x_mean <- mean(data_aice2$aice_avg)
+x_sd <- sd(data_aice2$aice_avg)
+
 env_mat_fore_avg_std <- foreach (i = 1:50) %do% {
   (env_mat_fore_avg[[i]] - x_mean)/x_sd
 }
