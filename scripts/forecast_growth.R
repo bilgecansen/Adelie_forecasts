@@ -121,6 +121,26 @@ r_clim <-
       b0_mean + b1_mean*x[k,] + b2_mean*(x[k,]^2)
     }
 
+# Only climate variance for all colonies
+r_clim_all <- 
+  foreach(k = 1:nrow(env_mean)) %:% 
+  foreach(i = 1:length(env), .combine = "rbind") %do% {
+    x <- env[[i]]
+    b0_mean + b1_mean*x[k,] + b2_mean*(x[k,]^2)
+  }
+
+# Save results in csv
+folder <- "growth_projections_climate"
+dir.create(folder)
+
+sites <- unique(row.names(env[[1]]))
+for (i in 1:length(sites)) {
+  
+  site_file <- paste(folder, "/", sites[i], ".csv", sep = "")
+  write.csv(r_clim_all[[i]], site_file)
+  
+}
+
 
 # Plot growth trajectories ------------------------------------------------
 
@@ -158,4 +178,5 @@ g4 <- plot_traj(r_proc[[3]], "PGEO", "Temporal Process Variance")
 
 (g1 | g2) / (g3 | g4)
 ggsave("fig_r_traj.jpeg", width = 12, height = 10, units = "in")
+
 
