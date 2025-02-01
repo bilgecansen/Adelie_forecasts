@@ -103,17 +103,21 @@ for (i in 1:length(r_param)) {
   colnames(r_param[[i]]) <- colnames(env[[1]])
 }
 
+# Only process uncertainty
+e_s2 <- rnorm(100*nrow(env[[1]]), 0, mean(s_s)) %>%
+  matrix(nrow = nrow(env[[1]]), ncol = 100)
+
 r_proc_s <- foreach(k = 1:nrow(env_mean)) %:% 
   foreach(h = 1:100, .combine = "rbind") %do% {
     b0_mean + b1_mean*env_mean[k,] + b2_mean*(env_mean[k,]^2) + 
-      e_s[k,h]
+      e_s2[k,h]
   }
 
 for (i in 1:length(r_proc_s)) {
   colnames(r_proc_s[[i]]) <- colnames(env[[1]])
 }
 
-# Only climate variance
+# Only climate uncertainty
 r_clim <- 
   foreach(k = 1:nrow(env_mean)) %:% 
     foreach(i = 1:length(env), .combine = "rbind") %do% {
@@ -235,8 +239,8 @@ plot_traj <- function(r_est, site_name, uncertainty_name, TOE) {
     theme(panel.border = element_blank(),
           panel.grid.minor = element_blank(),
           #axis.title.x = element_blank(),
-          plot.title = element_text(size = 12),
-          axis.title = element_text(size = 10),
+          plot.title = element_text(size = 11),
+          axis.title = element_text(size = 11),
           axis.text = element_text(size = 10),
           legend.position = "none") 
 }
@@ -244,33 +248,45 @@ plot_traj <- function(r_est, site_name, uncertainty_name, TOE) {
 g1 <- plot_traj(r_clim[[172]], "MIZU", "Climate Uncertainty", 
                 TOE = TOE_clim[172])
 
-g2 <- plot_traj(r_proc_s[[172]], "MIZU", "Spatial Process Variance",
+g2 <- plot_traj(r_proc_s[[172]], "MIZU", "Spatial Process Uncertainty",
                 TOE = TOE_proc[172])
 
-g3 <- plot_traj(r_param[[172]], "MIUZ", "Parameter Uncertainty",
+g3 <- plot_traj(r_param[[172]], "MIZU", "Parameter Uncertainty",
                 TOE = TOE_param[172])
 
+g4 <- plot_traj(r_all[[172]], "MIZU", "All Uncertainties",
+                TOE = TOE_all[172])
 
-g1 / g2 /g3 +
-  plot_annotation(tag_levels = list(c("a", "b", "c", ""))) + 
-  plot_layout(axis_titles = 'collect')
+(((g1 + theme(axis.title.x = element_blank())) / 
+    (g3 + theme(axis.title = element_blank()))) | 
+    (g2 + theme(axis.title = element_blank())) / 
+    (g4 + theme(axis.title.y = element_blank()))) +
+  plot_annotation(tag_levels = list(c("a", "c", "b", "d")))
 
-ggsave("fig2.pdf", width = 120, height = 180, units = "mm", dpi = 600)
+ggsave("fig2.pdf", width = 180, height = 180, units = "mm", dpi = 600)
 
-g4 <- plot_traj(r_clim[[68]], "CRZE", "Climate Uncertainty", 
+g5 <- plot_traj(r_clim[[68]], "CRZE", "Climate Uncertainty", 
                 TOE = TOE_clim[68])
 
-g5 <- plot_traj(r_proc_s[[68]], "CRZE", "Spatial Process Variance",
+g6 <- plot_traj(r_proc_s[[68]], "CRZE", "Spatial Process Uncertainty",
                 TOE = TOE_proc[68])
 
-g6 <- plot_traj(r_param[[68]], "CRZE", "Parameter Uncertainty",
+g7 <- plot_traj(r_param[[68]], "CRZE", "Parameter Uncertainty",
                 TOE = TOE_param[68])
 
-g4 / g5 /g6 +
-  plot_annotation(tag_levels = "a") + 
-  plot_layout(axis_titles = 'collect')
+g8 <- plot_traj(r_all[[68]], "CRZE", "All Uncertainties",
+                TOE = TOE_all[68])
 
-ggsave("fig3.pdf", width = 120, height = 180, units = "mm", dpi = 600)
+(((g5 + theme(axis.title.x = element_blank())) / 
+    (g7 + theme(axis.title = element_blank()))) | 
+    (g6 + theme(axis.title = element_blank())) / 
+    (g8 + theme(axis.title.y = element_blank()))) +
+  plot_annotation(tag_levels = list(c("a", "c", "b", "d")))
+
+ggsave("fig3.pdf", width = 180, height = 180, units = "mm", dpi = 600)
+
+g3
+ggsave("fig_traj.pdf", width = 120, height = 90, units = "mm", dpi = 600)
 
 
 # Plot maps ---------------------------------------------------------------
@@ -294,12 +310,10 @@ m1 <- ggplot() +
                                 ">2100" = "#D55E00"),
                      drop = FALSE) +
   labs(col = "TOE", title = "Climate Uncertainty") +
-  theme(legend.key.size = unit(1, 'cm'), 
-        #legend.key.height = unit(1, 'cm'), 
-        #legend.key.width = unit(1, 'cm'), 
-        legend.title = element_text(size=6), 
-        legend.text = element_text(size=4),
-        legend.position = "bottom") 
+  coord_sf(label_axes = list(bottom = "E", left = "E")) +
+  theme(legend.position = "bottom",
+        plot.title = element_text(size = 11)) +
+  guides(colour = guide_legend(override.aes = list(size = 3))) 
 
 m2 <- ggplot() +
   geom_sf(data = antarctic, alpha = 0.5) +
@@ -313,12 +327,10 @@ m2 <- ggplot() +
                                 ">2100" = "#D55E00"),
                      drop = FALSE) +
   labs(col = "TOE", title = "Spatial Process Uncertainty") +
-  theme(legend.key.size = unit(1, 'cm'), 
-        #legend.key.height = unit(1, 'cm'), 
-        #legend.key.width = unit(1, 'cm'), 
-        legend.title = element_text(size=6), 
-        legend.text = element_text(size=4),
-        legend.position = "bottom") 
+  coord_sf(label_axes = list(bottom = "E", left = "E")) +
+  theme(legend.position = "bottom",
+        plot.title = element_text(size = 11)) +
+  guides(colour = guide_legend(override.aes = list(size = 3))) 
 
 m3 <- ggplot() +
   geom_sf(data = antarctic, alpha = 0.5) +
@@ -332,12 +344,10 @@ m3 <- ggplot() +
                                 ">2100" = "#D55E00"),
                      drop = FALSE) +
   labs(col = "TOE", title = "Parameter Uncertainty") +
-  theme(legend.key.size = unit(1, 'cm'), 
-        #legend.key.height = unit(1, 'cm'), 
-        #legend.key.width = unit(1, 'cm'), 
-        legend.title = element_text(size=6), 
-        legend.text = element_text(size=4),
-        legend.position = "bottom") 
+  coord_sf(label_axes = list(bottom = "E", left = "E")) +
+  theme(legend.position = "bottom",
+        plot.title = element_text(size = 11)) +
+  guides(colour = guide_legend(override.aes = list(size = 3))) 
 
 m4 <- ggplot() +
   geom_sf(data = antarctic, alpha = 0.5) +
@@ -351,16 +361,39 @@ m4 <- ggplot() +
                                 ">2100" = "#D55E00"),
                      drop = FALSE) +
   labs(col = "TOE", title = "All Uncertainties") +
-  theme(legend.key.size = unit(1, 'cm'), 
-        #legend.key.height = unit(1, 'cm'), 
-        #legend.key.width = unit(1, 'cm'), 
-        legend.title = element_text(size=6), 
-        legend.text = element_text(size=4),
-        legend.position = "bottom") 
+  coord_sf(label_axes = list(bottom = "E", left = "E")) +
+  theme(legend.position = "bottom",
+        plot.title = element_text(size = 11)) +
+  guides(colour = guide_legend(override.aes = list(size = 3))) 
 
-(m1 | m2) / (m3 | m4) +
+(m1 | m2) / (m3 | m4) / guide_area() +
   plot_annotation(tag_levels = "a") +
-  plot_layout(guides = "collect") +
-  theme(legend.position = "left")
+  plot_layout(guides = "collect",
+              heights = c(5, 5, 1))
 ggsave("fig4.pdf", width = 180, height = 180, units = "mm", dpi = 600)
 
+
+# Plot sea ice trajectories -----------------------------------------------
+
+ice <- env <- readRDS("data/data_coupled_transformed_adpe.rds")
+ice_mizu <- map_dfr(ice, function(x) x[which(rownames(x) == "MIZU"),]) %>%
+  pivot_longer(everything(), names_to = "year", values_to = "ice") %>%
+  add_column(member = rep(1:50, each = 162)) %>%
+  mutate(year = as.numeric(year))
+
+ggplot(data = ice_mizu) +
+  geom_line(aes(x = year, y = ice, group = member, col = member)) +
+  scale_colour_gradient_tableau('Blue') +
+  scale_x_continuous(breaks = c(seq(1900, 2100, 50))) +
+  labs(x = "Year", y = "Sea Ice Concentration") +
+  theme(panel.border = element_blank(),
+        panel.grid.minor = element_blank(),
+        #axis.title.x = element_blank(),
+        plot.title = element_text(size = 11),
+        axis.title = element_text(size = 11),
+        axis.text = element_text(size = 10),
+        legend.position = "none")
+
+ggsave("fig_ice.pdf", width = 120, height = 90, units = "mm", dpi = 600)
+  
+  
