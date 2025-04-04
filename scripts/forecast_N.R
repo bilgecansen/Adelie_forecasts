@@ -28,7 +28,7 @@ b1_mean <- params_mean[2, 1]
 b2_mean <- params_mean[3, 1]
 
 # Forecast and hindcast
-env <- readRDS("data/data_coupled_normalized_adpe.rds")
+env <- readRDS("data/data_coupled_normalized_raw_adpe.rds")
 idx_s <- which(!rownames(env[[1]]) %in% sites_adpe$site_id)
 
 ## remove sites not in mapppd
@@ -122,9 +122,9 @@ N_list <- map2(N_hind_list, N_fore_list, function(x, y) cbind(x, y))
 # Weighted average of regional growth
 idx1 <- which(
   data_site$longitude <= -53 &
-    data_site$longitude >= -63 &
+    data_site$longitude >= -64 &
     data_site$latitude <= -62 &
-    data_site$latitude >= -64
+    data_site$latitude >= -67
 )
 
 idx4 <- which(
@@ -138,7 +138,7 @@ z <- data_site
 z$longitude[z$longitude < 0] <- z$longitude[z$longitude < 0] + 360
 idx5 <- which(
   z$longitude <= 200 &
-    z$longitude >= 169 &
+    z$longitude >= 165 &
     z$latitude <= -70 &
     z$latitude >= -78
 )
@@ -178,12 +178,14 @@ r4 <- calc_weighted_r(idx4)
 r5 <- calc_weighted_r(idx5)
 r6 <- calc_weighted_r(idx6)
 r7 <- calc_weighted_r(idx7)
+r8 <- calc_weighted_r(1:287)
 
 write.csv(r1, "r_region1_adpe.csv", row.names = F)
 write.csv(r4, "r_region4_adpe.csv", row.names = F)
 write.csv(r5, "r_region5_adpe.csv", row.names = F)
 write.csv(r6, "r_region6_adpe.csv", row.names = F)
 write.csv(r7, "r_region7_adpe.csv", row.names = F)
+write.csv(r8, "r_cpolar_adpe.csv", row.names = F)
 
 m1 <- data_site[idx1, ] %>%
   select(site_id, longitude, latitude) %>%
@@ -203,6 +205,7 @@ m7 <- data_site[idx7, ] %>%
 
 site_table <- rbind(m1, m4, m5, m6, m7)
 write.csv(site_table, "site_table.csv", row.names = F)
+
 
 # Plots -------------------------------------------------------------------
 
@@ -245,9 +248,10 @@ g2 <- plot_traj_r(r4, "Terre Adelie")
 g3 <- plot_traj_r(r5, "Ross Sea")
 g4 <- plot_traj_r(r6, "Amundsen-Bellingshausen")
 g5 <- plot_traj_r(r7, "Prydz Bay")
+g6 <- plot_traj_r(r8, "Circumpolar")
 
 (g1 + g2 + g3) /
-  (g4 + g5)
+  (g4 + g5 + g6)
 
 ggsave("fig_region.pdf", width = 180, height = 150, units = "mm", dpi = 600)
 

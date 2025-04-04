@@ -128,7 +128,7 @@ r_clim <-
   }
 
 # Climate + site level + parameter
-r_all <- foreach(i = 1:nrow(env[[1]])) %do%
+r_all <- foreach(i = 1:length(env)) %do%
   {
     x <- env[[i]]
 
